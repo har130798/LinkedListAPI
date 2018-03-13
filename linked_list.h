@@ -6,7 +6,6 @@
 #define FAIL 0
 
 typedef void(*print_type) (void *);
-typedef size_t(*get_size_type) (char, void *);
 
 typedef struct node {
 	void *data;
@@ -39,20 +38,6 @@ void print_float(void * a) {
 	printf("%0.2f ", *(float *)a);
 }
 
-size_t get_size(char type, void *data) {
-	size_t size;
-	switch (type)
-	{
-	case 'i': return sizeof(int);
-	case 'c': return sizeof(char);
-	case 'f': return sizeof(float);
-	case 's': size = strlen((char *)data) + 1;
-		return size;
-	default: return 0;
-		break;
-	}
-}
-
 list * create_list() {
 	list * new_list = (list *)malloc(size_list);
 
@@ -76,9 +61,8 @@ node * create_node(size_t bytes) {
 	return new_node;
 }
 
-int insert_node(void *data, char type, get_size_type get_size, list **head) {
+int insert_node(void *data, char type, size_t bytes, list **head) {
 
-	int bytes = get_size(type, data);
 	if (*head == NULL) return FAIL;
 	if (bytes == 0) return FAIL;
 	if (data == NULL) return FAIL;
@@ -118,16 +102,17 @@ int insert_node(void *data, char type, get_size_type get_size, list **head) {
 }
 
 int insert_char(char data, list ** head) {
-	return insert_node((char *)&data, 'c', &get_size, head);
+	return insert_node((char *)&data, 'c', sizeof(char), head);
 }
 int insert_int(int data, list ** head) {
-	return insert_node((int *)&data, 'i', &get_size, head);
+	return insert_node((int *)&data, 'i', sizeof(int), head);
 }
 int insert_float(float data, list ** head) {
-	return insert_node((float *)&data, 'f', &get_size, head);
+	return insert_node((float *)&data, 'f', sizeof(float), head);
 }
 int insert_string(char * data, list ** head) {
-	return insert_node((char *)data, 's', &get_size, head);
+	size_t size = strlen(data) + 1;
+	return insert_node((char *)data, 's', size, head);
 }
 void display(list ** head) {
 	node * temp = (*head)->head;
@@ -138,4 +123,5 @@ void display(list ** head) {
 		temp = temp->next;
 	}
 	printf("\n");
+
 }
