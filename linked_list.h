@@ -8,6 +8,7 @@
 typedef void(*print_type) (void *);
 typedef size_t(*get_size) (void *);
 
+
 typedef struct node {
 	void *data;
 	struct node * next;
@@ -125,5 +126,4 @@ void display(list ** head) {
 		temp = temp->next;
 	}
 	printf("\n");
-
 }
