@@ -6,6 +6,7 @@
 #define FAIL 0
 
 typedef void(*print_type) (void *);
+typedef size_t(*get_size) (void *);
 
 typedef struct node {
 	void *data;
@@ -38,6 +39,23 @@ void print_float(void * a) {
 	printf("%0.2f ", *(float *)a);
 }
 
+size_t get_int_size(void *data) {
+	return sizeof(int);
+}
+
+size_t get_float_size(void *data) {
+	return sizeof(float);
+}
+
+size_t get_char_size(void *data) {
+	return sizeof(char);
+}
+
+size_t get_string_size(void *data) {
+	size_t size = strlen((char *)data) + 1;
+	return size;
+}
+
 list * create_list() {
 	list * new_list = (list *)malloc(size_list);
 
@@ -61,8 +79,9 @@ node * create_node(size_t bytes) {
 	return new_node;
 }
 
-int insert_node(void *data, char type, size_t bytes, list **head) {
+int insert_node(void *data, get_size get_size, print_type type, list **head) {
 
+	int bytes = get_size(data);
 	if (*head == NULL) return FAIL;
 	if (bytes == 0) return FAIL;
 	if (data == NULL) return FAIL;
@@ -78,23 +97,7 @@ int insert_node(void *data, char type, size_t bytes, list **head) {
 		return FAIL;
 	}
 
-	print_type cur = NULL;
-
-	switch (type)
-	{
-	case 'i': cur = &print_int;
-		break;
-	case 's': cur = &print_string;
-		break;
-	case 'c': cur = &print_char;
-		break;
-	case 'f': cur = &print_float;
-		break;
-	default: cur = NULL;
-		break;
-	}
-
-	new_node->type = cur;
+	new_node->type = type;
 	(*head)->head = new_node;
 	(*head)->size++;
 
@@ -102,17 +105,16 @@ int insert_node(void *data, char type, size_t bytes, list **head) {
 }
 
 int insert_char(char data, list ** head) {
-	return insert_node((char *)&data, 'c', sizeof(char), head);
+	return insert_node((char *)&data, &get_char_size, &print_char, head);
 }
 int insert_int(int data, list ** head) {
-	return insert_node((int *)&data, 'i', sizeof(int), head);
+	return insert_node((int *)&data, &get_int_size, &print_int, head);
 }
 int insert_float(float data, list ** head) {
-	return insert_node((float *)&data, 'f', sizeof(float), head);
+	return insert_node((float *)&data, &get_float_size, &print_float, head);
 }
 int insert_string(char * data, list ** head) {
-	size_t size = strlen(data) + 1;
-	return insert_node((char *)data, 's', size, head);
+	return insert_node((char *)data, &get_string_size, &print_string, head);
 }
 void display(list ** head) {
 	node * temp = (*head)->head;
@@ -123,5 +125,4 @@ void display(list ** head) {
 		temp = temp->next;
 	}
 	printf("\n");
-
 }
